@@ -1,0 +1,639 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Logistic Regression\n",
+    "\n",
+    "In Lesson 2 and Lesson 3, we learned how to solve regression with Linear Regression.\n",
+    "\n",
+    "In this lesson, we will learn how to solve binary classification with Logistic Regression. For some stupid reason, Logistic Regression has the word \"Regression\" in its name even though it solves classification.\n",
+    "\n",
+    "**Exercise 1: Read pages 16-19 in http://cs229.stanford.edu/notes/cs229-notes1.pdf**\n",
+    "\n",
+    "Now that you have read the pages above, let's do the following:\n",
+    "\n",
+    "1. Implement the logistic regression function\n",
+    "2. Implement the gradient of the logistic regression function\n",
+    "3. Implement the gradient descent step."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Exercise 2 (logistic regression function): Implement a function that computes**\n",
+    "\n",
+    "$$\n",
+    "h(\\theta, \\mathbf{x}) = \\frac{1}{1 + e^{-\\mathbf{\\theta}^T\\mathbf{x}}}\n",
+    "$$\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Your implementation looks good\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "def log_reg(theta, X):\n",
+    "    \"\"\"\n",
+    "    @param theta - parameter vector theta of size d x 1\n",
+    "    @param X - design matrix of size m x d (m is number of examples, d is dimensionality of feature vector)\n",
+    "    @return a vector of size m x 1 which the i^th element is the logistic regression value (as shown in the\n",
+    "        cell above) for the i^th example.\n",
+    "    \"\"\"\n",
+    "    return 1 / (1 + np.exp(-np.matmul(X, theta)))\n",
+    "\n",
+    "X = np.array([\n",
+    "    [1, 2, 3],\n",
+    "    [3, 4, 5],\n",
+    "])\n",
+    "theta = np.array([1, 2, -1]).reshape(3, 1)\n",
+    "\n",
+    "expected = np.array([0.88079708,  0.99752738]).reshape(2, 1)\n",
+    "actual = log_reg(theta, X)\n",
+    "almost_equal = lambda x, y: abs(x - y) < 0.0001\n",
+    "try:\n",
+    "    assert(actual.shape == expected.shape)\n",
+    "    assert(len([i for i in range(actual.shape[0]) if not almost_equal(actual[i], expected[i])]) == 0)\n",
+    "    print(\"Your implementation looks good\")\n",
+    "except:\n",
+    "    print(\"Your implementation has a bug\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Exercise 3 (gradient): Implement a function that computes the gradient with respect to $\\theta$ for a given $\\theta_{n}$, $\\mathbf{x}$, and $y$**\n",
+    "\n",
+    "\n",
+    "$$\n",
+    "\\nabla_{\\mathbf{\\theta}} \\ell(\\theta_n, \\mathbf{x}, y) = (h(\\theta_n, \\mathbf{x}) - y)\\mathbf{x}\n",
+    "$$"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Your implementation looks good\n"
+     ]
+    }
+   ],
+   "source": [
+    "\"\"\"\n",
+    "Exercise 3: Implement gradient of logistic regression function.\n",
+    "\"\"\"\n",
+    "\n",
+    "def gradient(theta, X, y):\n",
+    "    \"\"\"\n",
+    "    @param theta - parameter vector theta of size d x 1\n",
+    "    @param X - design matrix of size m x d (m is number of examples, d is dimensionality of feature vector)\n",
+    "    @param y - label vector of size m x 1 indicating the binary label associated with each training example\n",
+    "    @return a vector of size m x d where the i^th row is the gradient vector (as shown in the cell above) for the i^th\n",
+    "        example.\n",
+    "    \n",
+    "    Hint: To element-wise multiply two matrices of the same size, do np.multiply(A, B).\n",
+    "    \"\"\"\n",
+    "    (m, d) = X.shape\n",
+    "    return np.multiply(\n",
+    "        np.matmul(np.ones((d, 1)), (log_reg(theta, X) - y).reshape(1, m)).T,\n",
+    "        X\n",
+    "    )\n",
+    "\n",
+    "\n",
+    "X = np.array([\n",
+    "    [1, 2, 3],\n",
+    "    [3, 4, 5],\n",
+    "])\n",
+    "theta = np.array([1, 2, -1]).reshape(3, 1)\n",
+    "y = np.array([1, 0]).reshape(2, 1)\n",
+    "\n",
+    "\n",
+    "actual = gradient(theta, X, y)\n",
+    "expected = np.array([\n",
+    "    [-0.11920292,  -0.23840584,  -0.35760877],\n",
+    "    [2.99258213, 3.99010951, 4.98763688],\n",
+    "])\n",
+    "try:\n",
+    "    assert(actual.shape == expected.shape)\n",
+    "    for i in range(actual.shape[0]):\n",
+    "        for j in range(actual.shape[1]):\n",
+    "            assert(almost_equal(actual[i][j], expected[i][j]))\n",
+    "    print('Your implementation looks good')\n",
+    "except:\n",
+    "    print('There is a bug in your implementation')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Exercise 4 (gradient descent): Implement a function that computes**\n",
+    "\n",
+    "\n",
+    "$$\n",
+    "\\theta_{n+1} = \\theta_{n} - \\alpha \\sum_{i=1}^{m}{\\nabla_{\\mathbf{\\theta}_{n}} \\ell(\\theta_n, \\mathbf{x}^{(i)}, y^{(i)})}\n",
+    "$$"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "def gradient_descent(theta, X, y, alpha):\n",
+    "    \"\"\"\n",
+    "    @param theta - parameter vector theta of size d x 1\n",
+    "    @param X - design matrix of size m x d (m is number of examples, d is dimensionality of feature vector)\n",
+    "    @param y - label vector of size m x 1 indicating the binary label associated with each training example\n",
+    "    @param alpha - the learning rate parameter.\n",
+    "    @return a vector of size d x 1 representing the new theta after doing the gradient descent step (as shown\n",
+    "        above)\n",
+    "    \"\"\"\n",
+    "    (_, d) = X.shape\n",
+    "    return theta - alpha * np.sum(gradient(theta, X, y), axis=0).reshape(d, 1)\n",
+    "\n",
+    "X = np.array([\n",
+    "    [1, 2, 3],\n",
+    "    [3, 4, 5],\n",
+    "])\n",
+    "theta = np.array([1, 2, -1]).reshape(3, 1)\n",
+    "y = np.array([1, 0]).reshape(2, 1)\n",
+    "alpha = 0.01\n",
+    "\n",
+    "expected = np.array([\n",
+    "    [ 0.97126621],\n",
+    "    [ 1.96248296],\n",
+    "    [-1.04630028],\n",
+    "])\n",
+    "actual = gradient_descent(theta, X, y, alpha)\n",
+    "try:\n",
+    "    assert(expected.shape == actual.shape)\n",
+    "    for i in range(expected.shape[0]):\n",
+    "        assert(almost_equal(actual[i], expected[i]))\n",
+    "except:\n",
+    "    print('Implementation has a bug')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Final Algorithm\n",
+    "\n",
+    "Now that we have implemented all the pieces above, it's easy to combine them together."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "def fit_logistic_regression(\n",
+    "    X,\n",
+    "    y, \n",
+    "    alpha=0.01,\n",
+    "    sigma=0.1,\n",
+    "    num_epochs=1000,\n",
+    "):\n",
+    "    \"\"\"\n",
+    "    @param X - design matrix of size m x d (m is number of examples, d is dimensionality of feature vector)\n",
+    "    @param y - label vector of size m x 1 indicating the binary label associated with each training example\n",
+    "    @param alpha - the learning rate parameter.\n",
+    "    @param sigma - We initialize the theta vector with zero-mean Gaussian with the given value of sigma.\n",
+    "    @param num_epochs - The number of gradient descent steps we will take.\n",
+    "    \n",
+    "    @return The theta vector representing the parameters of the logistic regression.\n",
+    "    \"\"\"\n",
+    "    (m, d) = X.shape\n",
+    "    y = y.reshape((m, 1))\n",
+    "    \n",
+    "    # Let's initialize the theta vector by randomly sampling\n",
+    "    # from a zero-mean Gaussian with standard deviation sigma.\n",
+    "    theta = np.random.normal(0, sigma, d).reshape((d, 1))\n",
+    "    \n",
+    "    # Run gradient descent.\n",
+    "    for i in range(num_epochs):\n",
+    "        theta = gradient_descent(theta, X, y, alpha)\n",
+    "    \n",
+    "    return theta"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Running Logistic Regression on a Simple Dataset\n",
+    "\n",
+    "Now let's try out that logistic regression fitting function.\n",
+    "\n",
+    "Let us generate a simple dataset with 10,000 examples where each example is a 4-element feature vector.\n",
+    "\n",
+    "Each element of the feature vector is randomly sampled from a zero-mean unit-variance Gaussian.\n",
+    "\n",
+    "We will compute the label for a feature vector as follows:\n",
+    "\n",
+    "1. Sum the elements of the feature vector\n",
+    "2. Add some random noise from a zero-mean, unit-variance Gaussian\n",
+    "3. If the resulting value is positive, give it label = 1. Otherwise, give it label = 0"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "True labels [0 1 1 ..., 0 0 1]\n",
+      "Predicted scores [  9.99999222e-01   1.00000000e+00   1.00000000e+00 ...,   3.62703564e-05\n",
+      "   9.99999282e-01   9.99604406e-01]\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.metrics import precision_recall_curve\n",
+    "import matplotlib.pyplot as plt\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "\n",
+    "(m, d) = (10000, 4)\n",
+    "X = np.random.normal(0, 1, (m, d))\n",
+    "y = np.where((np.random.normal(0, 1, m) + np.sum(X, axis=1)) > 0, 1, 0)\n",
+    "\n",
+    "# Split it into a train and test set.\n",
+    "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n",
+    "\n",
+    "# Fit Logistic Regression and make predictions.\n",
+    "theta = fit_logistic_regression(X_train, y_train)\n",
+    "y_pred_scores = log_reg(theta, X_test)\n",
+    "\n",
+    "# Reshape the predictions and labels for the test set.\n",
+    "m_test = y_test.shape[0]\n",
+    "y_test = y_test.reshape(m_test)\n",
+    "y_pred_scores = y_pred_scores.reshape(m_test)\n",
+    "\n",
+    "print('True labels', y_test)\n",
+    "print('Predicted scores', y_pred_scores)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Evaluating Binary Classification\n",
+    "\n",
+    "Now that we have our scores and predictions, how do we evaluate the performance of our logistic\n",
+    "regression model?\n",
+    "\n",
+    "One challenge is that our Logistic Regression model does not actually predict 0-1 labels, it predicts\n",
+    "a score between 0-1. Thus, we need to threshold the scores. That is, we need to pick a threshold\n",
+    "$t$ such that if the score exceeds $t$, we predict 1, otherwise we predict 0. That is, we have a thresholding function:\n",
+    "\n",
+    "$$\n",
+    "T(v) = \\mathbb{I}(v > t)\n",
+    "$$\n",
+    "\n",
+    "Where $\\mathbb{I}(x) = 1$ if $x$ is true and 0 otherwise.\n",
+    "\n",
+    "Suppose that we are given the value of $t$, this allows us create two $m_{test}$-dimensional binary vectors. One vector contains the true labels for the test set (call it $\\mathbf{y}$) and the other contains our predicted labels (call it $\\mathbf{\\hat{y}}$).\n",
+    "\n",
+    "### (Bad Idea) Accuracy\n",
+    "One approach is to simply compute the fraction of times that our prediction matches the true label. That is:\n",
+    "\n",
+    "$$\n",
+    "Accuracy = \\frac{1}{m_{test}} \\sum_{i=1}^{m_{test}}{\\mathbb{I}(\\mathbf{y}_i = \\mathbf{\\hat{y}}_i)}\n",
+    "$$\n",
+    "\n",
+    "Why is this a bad idea? To understand, imagine that we have built a Logistic Regression classifier to predict whether a person has some rare disease (1 = they have the disease, 0 = they do NOT have the disease). In this case, almost ALL of our training examples will be labeled 0 (because the disease is rare). Thus, a very stupid classifier that ALWAYS predicts 0 will achieve an incredibly high accuracy.\n",
+    "\n",
+    "### (Better Idea) Precision and Recall\n",
+    "To get around this problem, we denote four situations:\n",
+    "\n",
+    "1. True Positive: We predict 1 and the label is 1\n",
+    "2. True Negative: We predict 0 and the label is 0\n",
+    "3. False Positive: We predict 1 and the label is 0\n",
+    "4. False Negative: We predict 0 and the label is 1\n",
+    "\n",
+    "Denote the number of true positive, true negatives, false positives, and false negatives in our testing set with $TP$, $TN$, $FP$, and $FN$, respectively.\n",
+    "\n",
+    "We then define the following two numbers:\n",
+    "\n",
+    "$$\n",
+    "Precision = \\frac{TP}{TP + FP}\n",
+    "$$\n",
+    "\n",
+    "$$\n",
+    "Recall = \\frac{TP}{TP + FN}\n",
+    "$$\n",
+    "\n",
+    "Thus, going back to our \"predicting rare disease\" example, we have:\n",
+    "\n",
+    "Precision = When the person has the disease, what's the probability that our classifier will indicate so?\n",
+    "\n",
+    "Recall = What fraction of people with the disease is our classifier able to detect?\n",
+    "\n",
+    "\n",
+    "\n",
+    "Suppose that the fraction of people who have the disease is $p$.\n",
+    "\n",
+    "**Exercise 5: What is the Precision and Recall of a classifier that always predicts that people have the disease?**\n",
+    "\n",
+    "**Exercise 6: What is the Precision and Recall of a classifier that never predicts that people have the disease?**\n",
+    "\n",
+    "**Exercise 7: What is the Precision and Recall of the perfect classifier?**\n",
+    "\n",
+    "**Exercise 8: What is the Precision and Recall of a classifier that flips a fair coin and predicts 1 if heads and 0 if tails?**\n",
+    "\n",
+    "**Exercise 9: What is the Precision and Recall of a classifier that randomly samples a number from the uniform distribution over the interval [0, 1] and predicts 1 if the sample is $\\leq p$ and 0 otherwise?**\n",
+    "\n",
+    "### (Best Idea) F1 Score\n",
+    "Precision and Recall are nice, but it would be nice to summarize the performance of the model using just a single number. For this purpose, we have a metric called the F1 score:\n",
+    "\n",
+    "$$\n",
+    "F1 = 2 \\cdot \\frac{Precision \\cdot Recall}{Precision + Recall}\n",
+    "$$\n",
+    "\n",
+    "### How do we pick the threshold $t$?\n",
+    "We know $t \\in [0, 1]$, so try a thousand different values of $t$ between 0 and 1 and pick the one with the highest F1 score."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Exercise 10: Implement Precision, Recall, and F1**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Implementation looks good\n"
+     ]
+    }
+   ],
+   "source": [
+    "def precision_recall_f1(y_test, y_pred_labels):\n",
+    "    \"\"\"\n",
+    "    @param y_test - An array of m true binary labels.\n",
+    "    @param y_pred_labels - An array of m predicted binary labels.\n",
+    "    \n",
+    "    @return A tuple of the form (f1, precision, recall)\n",
+    "    \n",
+    "    Hint: To count the number of examples where the prediction and\n",
+    "        the label are both 0, you can do:\n",
+    "        num_match = np.sum(np.where((y_test == 0) & (y_pred_labels == 0), 1, 0))\n",
+    "    \"\"\"\n",
+    "    tp = np.sum(np.where((y_test == 1) & (y_pred_labels == 1), 1, 0))\n",
+    "    fp = np.sum(np.where((y_test == 0) & (y_pred_labels == 1), 1, 0))\n",
+    "    fn = np.sum(np.where((y_test == 1) & (y_pred_labels == 0), 1, 0))\n",
+    "    precision = 1.0 * tp / (tp + fp)\n",
+    "    recall = 1.0 * tp / (tp + fn)\n",
+    "    f1 = 2.0 * (precision * recall) / (precision + recall)\n",
+    "    return (f1, precision, recall)\n",
+    "\n",
+    "    \n",
+    "y_test_experiment = np.array(\n",
+    "    [1, 0, 1, 0, 0],\n",
+    ")\n",
+    "y_pred_labels_experiment = np.array(\n",
+    "    [1, 0, 0, 1, 1],\n",
+    ")\n",
+    "expected = (0.4, 1.0/3, 0.5)\n",
+    "actual = precision_recall_f1(y_test_experiment, y_pred_labels_experiment)\n",
+    "try:\n",
+    "    assert(expected == actual)\n",
+    "    print(\"Implementation looks good\")\n",
+    "except:\n",
+    "    print(\"Implementation has a bug\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**Exercise 11: Implement logic for picking the best threshold**"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Implementation looks good\n"
+     ]
+    }
+   ],
+   "source": [
+    "def pick_best_threshold(y_test, y_pred_scores, thresholds):\n",
+    "    \"\"\"\n",
+    "    @param y_test - An array of m true binary labels.\n",
+    "    @param y_pred_labels - An array of m predicted scores on the interval [0, 1].\n",
+    "    @param thresholds - An array of thresholds on the interval [0, 1] to try out.\n",
+    "    \n",
+    "    @return A dictionary with two keys: 'best_threshold' and 'precision_recall_f1s' where\n",
+    "        'best_threshold' maps to the threshold that maximizes f1 and 'precision_recall_f1s'\n",
+    "        is an array of (threshold, (f1, precision, recall)) tuples with one entry for each threshold\n",
+    "        and sorted by increasing threshold.\n",
+    "    \"\"\"\n",
+    "    precision_recall_f1s = sorted([\n",
+    "        (\n",
+    "            t,\n",
+    "            precision_recall_f1(y_test, np.where(y_pred_scores > t, 1, 0)),\n",
+    "        ) for t in thresholds\n",
+    "    ])\n",
+    "    best_i = 0\n",
+    "    best_f1 = precision_recall_f1s[0][1][0]\n",
+    "    for i in range(len(precision_recall_f1s)):\n",
+    "        f1 = precision_recall_f1s[i][1][0]\n",
+    "        if f1 > best_f1:\n",
+    "            best_f1 = f1\n",
+    "            best_i = i\n",
+    "    best_threshold = precision_recall_f1s[best_i][0]\n",
+    "    return {\n",
+    "        'best_threshold': best_threshold,\n",
+    "        'precision_recall_f1s': precision_recall_f1s,\n",
+    "    }\n",
+    "            \n",
+    "\n",
+    "y_test_experiment = np.array(\n",
+    "    [1, 0, 1, 0, 0, 1],\n",
+    ")\n",
+    "y_pred_scores_experiment = np.array(\n",
+    "    [0.8, 0.3, 0.1, 0.5, 0.7, 0.7],\n",
+    ")\n",
+    "expected = (0.4, 1.0/3, 0.5)\n",
+    "result = pick_best_threshold(y_test_experiment, y_pred_scores_experiment, [0.25, 0.5, 0.75])\n",
+    "try:\n",
+    "    assert(result['best_threshold'] == 0.5)\n",
+    "    assert(\n",
+    "        tuple(result['precision_recall_f1s']) == (\n",
+    "            (0.25, (0.5, 0.4, 2.0/3)), \n",
+    "            (0.5, (2.0/3, 2.0/3, 2.0/3)), \n",
+    "            (0.75, (0.5, 1.0, 1.0/3))\n",
+    "        )\n",
+    "    )\n",
+    "    print(\"Implementation looks good\")\n",
+    "except:\n",
+    "    print(\"Implementation has a bug\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Evaluating Logistic Regression\n",
+    "\n",
+    "Let's now evaluate your logistic regression implementation."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 62,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/Users/harihar/anaconda/lib/python3.6/site-packages/ipykernel/__main__.py:15: RuntimeWarning: invalid value encountered in double_scalars\n"
+     ]
+    },
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAZIAAAEWCAYAAABMoxE0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlz\nAAALEgAACxIB0t1+/AAAADl0RVh0U29mdHdhcmUAbWF0cGxvdGxpYiB2ZXJzaW9uIDIuMS4xLCBo\ndHRwOi8vbWF0cGxvdGxpYi5vcmcvAOZPmwAAIABJREFUeJzt3X+YXVV97/H3hyEJKT8MMcGHTIBE\nGoMKmrRTEGktqDERFUZFSYQqlguPtdBHbXNNLlTSFBSkinovVxv8gUpMoohjbsEGKlBbJDQTEwlJ\nDQnhR2aCEn6MIgwhJN/7x9kTdk7OmXNm9tnnzJn5vJ5nnpyz99r7rJUf55O11t5rKyIwMzMbrIMa\nXQEzM2tuDhIzM8vEQWJmZpk4SMzMLBMHiZmZZeIgMTOzTBwkZnUm6W5J/6MOn3OBpP8c5LGLJN3U\nz/5HJL198LWz4cRBYk0v+VLrlfT71M+kZN8SSZsl7ZV0QQPq1u8Xstlw4CCx4eI9EXFY6mdHsv2X\nwMeBXzSwboMm6eBG18GsEgeJDWsRcX1E/BR4ob9ykt4k6deSWlLb3ivp/uT1yZI6Jf1O0m8kfbHS\nZ0uaA/wv4Nykl/TL1O7jJN0j6VlJt0uakBwzRVJIulDSY8Cdqfr9XFKPpF9KOj31ORdI2pac62FJ\n5xXV458kPZPse2dq+yRJKyU9LWmrpIv6actfSHpU0lOSLqvUdhtZHCRmQESsBp4D3pra/CHge8nr\nLwNfjogjgOOB71dxzn8FPgusSHpJbyw690eBo4DRwN8VHf7nwGuB2ZJagVuBK4HxSdkfSpoo6VDg\nK8A7I+Jw4M3A+tR5TgE2AxOAzwPfkKRk3zKgC5gEnAN8VtLbitsh6XXAV4G/SMq+Ephcqf02cjhI\nbLjoSP633iOpY5DnWAbMA5B0OHBmsg1gN/CHkiZExO+T4MniWxHxYET0UgilGUX7F0XEc8n+84Hb\nIuK2iNgbEXcAnUn9APYCJ0oaGxGPR8TG1HkejYgbImIP8G3gaOBVko4B/hT4dES8EBHrga9TCIti\n5wD/EhE/i4hdwN8nn2kGOEhs+GiPiHHJT/sgz/E94H2SxgDvA34REY8m+y4EXgP8StIaSe/OWN9f\np14/DxxWtH976vVxwAdSQdlDIQSOjojngHOBjwGPS7pV0gmlPicink9eHkahZ/F0RDybKvso0Fqi\nrpPS9Uk+86kq2mgjhIPELBERmyh8mb6T/Ye1iIgtETGPwlDUNcDNybBSxdMOtjqp19uB76aCclxE\nHBoRVyd1WxURsyj0Nn4F3FDF+XcA45OeV59jge4SZR8Hjul7I+kPKAxvmQEOEhvmJI2WdAggYJSk\nQyT19/f+e8DfAG8BfpA6z/mSJkbEXqAn2byniir8BphS4TMruQl4j6TZklqSNpwuabKkV0k6Kwm1\nXcDvq6lXRGwHfg58LjnfGyj0upaWKH4z8G5JfyppNLAYf3dYiv8y2HB3O9BLYRJ6SfL6Lf2UXwac\nDtwZEU+mts8BNkr6PYWJ97kR8QJAckXWn5U5X18YPSVpUJcgJ1/6Z1O4AmwnhR7KfAr/fg8C/pZC\nD+NpCpP0H6/y1POAKcmxPwKuSOZfij9/I/DXFEL2ceAZCpP0ZgDID7YyM7Ms3CMxM7NMHCRmZpaJ\ng8TMzDJxkJiZWSYjYkG4CRMmxJQpUxpdDTOzprJ27donI2JipXIjIkimTJlCZ2dno6thZtZUJD1a\nuZSHtszMLCMHiZmZZeIgMTOzTBwkZmaWiYPEzMwycZCYmVkmDhIzM8vEQWJmZpk4SMzMLBMHiZmZ\nZeIgMTOzTBwkZmaWiYPEzMwycZCYmVkmDhIzM8vEQWJmZpk4SMzMLBMHiZmZZZJrkEiaI2mzpK2S\nFpTYf6ykuyStk3S/pDOT7bMkrZW0Ifn1ralj7k7OuT75OSrPNpiZWf9ye2a7pBbgemAW0AWskbQy\nIjalil0OfD8ivirpdcBtwBTgSeA9EbFD0onAKqA1ddx5EeGHsJuZDQF59khOBrZGxLaIeBFYDpxd\nVCaAI5LXrwB2AETEuojYkWzfCBwiaUyOdTUzs0HKM0hage2p913s36sAWAScL6mLQm/k0hLneT+w\nLiJ2pbZ9KxnW+ntJKvXhki6W1Cmpc+fOnYNuhJmZ9S+3oS2g1Bd8FL2fB9wYEV+QdCrwXUknRsRe\nAEmvB64B3pE65ryI6JZ0OPBD4C+A7xzwQRFLgCUAbW1txZ9bMx3rulm0ciM9vbv7LXeQYOJho/nN\nsy/ut33MwQdxzfvfQPvM4ow1M2sOeQZJF3BM6v1kkqGrlAuBOQARca+kQ4AJwBOSJgM/Aj4cEQ/1\nHRAR3cmvz0r6HoUhtAOCJA+Xd2zgptWPDerYvcEBIQKw66W9fGLFegCHiZk1pTyDZA0wTdJUoBuY\nC3yoqMxjwNuAGyW9FjgE2ClpHHArsDAi7ukrLOlgYFxEPClpFPBu4N9ybMM+WUKkGp9YsX5foACc\ndvx4ll50am6fZ2ZWK7nNkUTES8AlFK64+m8KV2dtlLRY0llJsb8FLpL0S2AZcEFERHLcHwJ/X3SZ\n7xhglaT7gfUUAuqGvNqQtjTHECnlnoeeZsqCW7m8Y0NdP9fMbKBU+N4e3tra2qKzc/BXC3es696v\nt1Bv0446lDs+dXrDPt/MRiZJayOirVI539lehX/4fxsb+vlbnniOWV+8u6F1MDMrx0FShWee7/+K\nrHrY8sRznHLVHY2uhpnZAfKcbLca+82zLzJlwa373ntC3syGAgdJBR3ruqsu23dPCNDvvSWnHT+e\nDV2/5Xe79mSqW9+EPBTuU/nQKcdyZftJmc5pZjZQnmyv4LSr76S7p7fs/keuftdgq8V5N9zLPQ89\nPejjyyk3Od+xrpv5P1jP7r3ljx3dIg4dczA9z+9m0rixzJ893fe3mI1Q1U62O0gqmLrg1gNux+/T\nOm4s9yx4a5m9g1PrcJl21KEcdfiYzOc87fjxPPJULzt6eh0wZiOEr9qqkUnjxpbcLmD+7Ok1/7yl\nF53KacePr9n5tjzxXE2C6Z6Hnqa7p5cAunt6+cSK9b7PxcwAz5FUdMYJE0ve0f7m48fn9j/ypRed\n2vB7V6p10+rHuGPjr7nvslkH7Ku0GkCrezZmw4KHtiooN0eSx7BWsVlfvJstTzyX62c0g/Pf5IsI\nzBrBQ1s1sqPMRHu57bV0x6dOZ9pRh+b+OUPdTasfY8qCW5m5+PYBXUVnZvXhoa0KJo0bW7JHUm7u\npNaKr77Ke/HIoeyZ53cfsLgleCl+s0bz0FYFHeu6WXjLBnp3v3zPx9hRLXzufScNqS+uwV7tNW7s\nKJ7btbvfS4KbjW/UNKsNX/6bUotFG69dtblpLn3tL1Sq/ZJtlsn+/giQCs+CaZGYd0rh8TjL7tvO\nnoh92zz/YlaagyQla5CMZJd3bNj3xTtcverw0SWvOjMb6RwkKQ6S2hrsPM2rDj/wUcNDkYfGzAqq\nDRJPttuA9Q0F5TVElNfSMdVKr2HmS4/NKnOPxIakZrk67eCDxD994I1Des7MbLA8tJXiIGluHeu6\n+11NuZl4lWZrJg6SFAfJ8NTMFwIIuO7cGbTPbC27KrPnaqzRHCQpDpKRo9HzK3nwmmTWKA6SFAeJ\npVXzXJahKo97X6oNX68gMPIMiSCRNAf4MtACfD0iri7afyzwbWBcUmZBRNyW7FsIXAjsAf4mIlZV\nc85SHCRWyXDsyaSlQyDrhQzlHpxmw0/Dg0RSC/AgMAvoAtYA8yJiU6rMEmBdRHxV0uuA2yJiSvJ6\nGXAyMAn4N+A1yWH9nrMUB4lVq5l7K/V0xJgW7v+HOY2uhuVsKNxHcjKwNSK2JRVaDpwNpL/0Azgi\nef0KYEfy+mxgeUTsAh6WtDU5H1Wc02zQ2me2Vhy6aZZLk/P0u117OOWqO7wigAH5BkkrsD31vgs4\npajMIuB2SZcChwJvTx27uujYvn/dlc4JgKSLgYsBjj322IHX3qyMK9tPKjlH0bGum0+tWM9I6cz8\n5tkX9924mea5lJEnzyBRiW3F42jzgBsj4guSTgW+K+nEfo4t9fyUkmNzEbEEWAKFoa2qa202SJV6\nMyOlJ7Prpb37lvt3qIwMeQZJF3BM6v1kXh666nMhMAcgIu6VdAgwocKxlc5pNiSV68kUO+WqO5pi\nTbJqpEOlj5edGX7yfELiGmCapKmSRgNzgZVFZR4D3gYg6bXAIcDOpNxcSWMkTQWmAf9V5TnNmtp9\nl83i/Dc1Zjh22lGH8sjV79r3c9rx42v+GX1PvDzvhntrfm5rjLwv/z0T+BKFS3W/GRFXSVoMdEbE\nyuTqrBuAwygMUf3PiLg9OfYy4C+Bl4BPRMRPyp2zUj181ZYNF8WXKafvfh/M0Fk1Q0+NejaNl5Np\nvIZf/juUOEjMsmnkg848FNY4DpIUB4lZdrO+eDdbnniu0dVwsNRRtUGS5xyJmQ0jd3zq9FzmTAbq\nptWPccpVdzS6GpbiHomZ1VS9lptJr6Bcjf7ml6w0D22lOEjMGqfeN2qWuoDgDVf8K7/bteeAsqcd\nP54PtB3b77I4As4bocNpDpIUB4lZ4w2ndcxGysKVDpIUB4nZ0NWsAXNIi/jVVWc2uhq5cpCkOEjM\nmkMzLyNz6OgWrnrvScNqORgHSYqDxKz5DJXLjQfqSwO4AGCoc5CkOEjMmt+rF97K3ib7umr2RSt9\nH4mZDStf/OCMRldhwPoWrRzu64o5SMysKbTPbOVL585gVBN+a93z0NPDOkw8tGVmw0bHum6uXbWZ\nHT29TBo3lvmzpx8wrHR5xwaW3bedPRG0SMw75Ziy94ikz1erb8pmuhHScyQpDhIzq4Va3rXfDPei\nOEhSHCRmVmu1ulS5tUzPaSjwZLuZWY6ubD+pJg8g6+7p5RMr1jP98p/Qsa67BjWrPweJmdkgXdl+\nEl86dwat48ZmPlffFV7NuLKxh7bMzGqoFku+DJX5Ew9tmZk1QPvMVrZ89l2Zhr22PPEcUxbcyszF\ntzfFcJd7JGZmOctytddBKtyM2YjJePdIzMyGiKUXncqXzh3cnfl7Az6xYv2Q7pm4R2JmVie1uGS4\n0k2UtTQkeiSS5kjaLGmrpAUl9l8naX3y86CknmT7Gant6yW9IKk92XejpIdT+5pvAR4zG5H6rvIa\nm2Gdlz0R3LT6MaYsuHXILLuSW49EUgvwIDAL6ALWAPMiYlOZ8pcCMyPiL4u2jwe2ApMj4nlJNwL/\nEhE3V1sX90jMbKjKerd8nld4DYUeycnA1ojYFhEvAsuBs/spPw9YVmL7OcBPIuL5HOpoZtZQSy86\nlTEHD/6reMsTzzV8/iTPIGkFtqfedyXbDiDpOGAqcGeJ3XM5MGCuknR/MjQ2psw5L5bUKalz586d\nA6+9mVmdXPP+N2T6Mr521eaa1WUw8gwSldhWbhxtLnBzROzZ7wTS0cBJwKrU5oXACcCfAOOBT5c6\nYUQsiYi2iGibOHHiQOtuZlY37TNb+WKGuZPunt4a12hgDs7x3F3AMan3k4EdZcrOBf66xPYPAj+K\niN19GyLi8eTlLknfAv6uBnU1M2uo9pmt++4V6VjXzSdXrK/Z0vV5y7NHsgaYJmmqpNEUwmJlcSFJ\n04EjgVKXHxwwb5L0UpAkoB14oMb1NjNrqPaZrVx37gzGjR1V9TGXd2zIsUb9yy1IIuIl4BIKw1L/\nDXw/IjZKWizprFTRecDyKLp8TNIUCj2afy869VJJG4ANwATgynxaYGbWOO0zW1l/xTuSp0KWminY\n39IaLGk/WHkObRERtwG3FW37TNH7RWWOfYQSk/MR8dba1dDMbGjrG+5atHIjPb27y5Zr5DCYl0gx\nMxvi+nonR/5B/0NdjboM2EFiZtYkrnjP6/vdv/CW++tUk/05SMzMmkT7zNZ+l6fv3b23Ib0SB4mZ\nWROptFjjopUb61STlzlIzMyGkf4m5PPiIDEzazIDub+kHhwkZmZNZtFZ/U+615uDxMysyVR67G69\nJ9wdJGZmTai/e0rqvRqwg8TMrAn1d09JvVcDdpCYmTWhSsNb9eQgMTMbhuo5T+IgMTMbhup5Y6KD\nxMysSfU34V7PGxMdJGZmTarSIo714iAxM2tS7TNbOXR0S8l9lZacryUHiZlZE7vqvScxqmX/JyiO\nalFdeyuDfkKipBMi4le1rIyZmQ1M32XA167azI6eXiaNG8v82dPrenlwlh7J7TWrhZmZNa1+eySS\nvlJuFzCu9tUxM7OB6FjXzcJbNtC7ew9QuKt94S0bgPrdtFipR/JR4AFgbdFPJ/BipZNLmiNps6St\nkhaU2H+dpPXJz4OSelL79qT2rUxtnyrpPklbJK2QNLq6ppqZDT/Xrtq8L0T69O7eU9f7SCrNkawB\nHoiInxfvkLSovwMltQDXA7OALmCNpJURsamvTER8MlX+UmBm6hS9ETGjxKmvAa6LiOWSvgZcCHy1\nQjvMzIalHWXW1erp3U3Huu669Eoq9UjOAdaX2hERUyscezKwNSK2RcSLwHLg7H7KzwOW9XdCSQLe\nCtycbPo20F6hHmZmw9akcWPL7qvXKsCVguSwiHh+kOduBban3ncl2w4g6ThgKnBnavMhkjolrZbU\nFxavBHoi4qVK5zQzGwnmz55edl+53kqtVQqSjr4Xkn44wHOrxLYoU3YucHNEpAf6jo2INuBDwJck\nHT+Qc0q6OAmizp07dw6k3mZmTaN9ZmvZmw/7663UUqUgSX9xv3qA5+4Cjkm9nwzsKFN2LkXDWhGx\nI/l1G3A3hfmTJ4FxkvrmdsqeMyKWRERbRLRNnDhxgFU3M2se73rD0SW3n3FCfb77KgVJlHldjTXA\ntOQqq9EUwmJlcSFJ04EjgXtT246UNCZ5PQE4DdgUEQHcRWHuBuAjwI8HWC8zs2Hlrl+VHnUpt73W\nKl219UZJv6PQMxmbvCZ5HxFxRLkDI+IlSZcAq4AW4JsRsVHSYqAzIvpCZR6wPAmJPq8F/lnSXgph\nd3Xqaq9PA8slXQmsA75RdWvNzIahcnMh9Zoj6TdIIqL0amBViojbgNuKtn2m6P2iEsf9HDipzDm3\nUbgizMzMKMyFlHq87lCZIzEzsyGu3FzIUJkjMTOzIa7RcyQOEjOzJtfoORIHiZlZkys3F+I5EjMz\nq8r82dMZO2r/a6PGjmrp9673Whr0g63MzGxoaPTDrRwkZmbDQPvM1ro+FTHNQ1tmZpaJeyRmZsNA\nx7puD22ZmdngNPpxux7aMjNrcuUetztUHmxlZmZDnG9INDOzTHxDopmZZeIbEs3MLBPfkGhmZpn5\nhkQzM2taDhIzM8vEQWJmZpk4SMzMLBMHiZmZZZJrkEiaI2mzpK2SFpTYf52k9cnPg5J6ku0zJN0r\naaOk+yWdmzrmRkkPp46bkWcbzMysf7ld/iupBbgemAV0AWskrYyITX1lIuKTqfKXAjOTt88DH46I\nLZImAWslrYqInmT//Ii4Oa+6m5lZ9fLskZwMbI2IbRHxIrAcOLuf8vOAZQAR8WBEbEle7wCeACbm\nWFczMxukPIOkFdieet+VbDuApOOAqcCdJfadDIwGHkptvioZ8rpO0pgy57xYUqekzp07dw62DWZm\nTaNjXTenXX0nUxfcymlX30nHuu66fG6eQaIS26JM2bnAzRGx3zrIko4Gvgt8NCL2JpsXAicAfwKM\nBz5d6oQRsSQi2iKibeJEd2bMbHjreyZJd08vwcvPJKlHmOQZJF3AMan3k4EdZcrOJRnW6iPpCOBW\n4PKIWN23PSIej4JdwLcoDKGZmY1ojXwmSZ5BsgaYJmmqpNEUwmJlcSFJ04EjgXtT20YDPwK+ExE/\nKCp/dPKrgHbggdxaYGbWJBr5TJLcgiQiXgIuAVYB/w18PyI2Slos6axU0XnA8ohID3t9EHgLcEGJ\ny3yXStoAbAAmAFfm1QYzs2bRyGeSaP/v7+Gpra0tOjs7G10NM7PcFD+3HQrPJPnc+04a9KrAktZG\nRFulcl5G3sxsGGjkM0kcJGZmw0SjnknitbbMzCwTB4mZmWXiIDEzs0wcJGZmlomDxMzMMnGQmJlZ\nJg4SMzPLxEFiZmaZOEjMzCwTB4mZmWXiIDEzs0wcJGZmlomDxMzMMnGQmJlZJg4SMzPLxEFiZmaZ\nOEjMzCwTB4mZmWXiIDEzs0xyDRJJcyRtlrRV0oIS+6+TtD75eVBST2rfRyRtSX4+ktr+x5I2JOf8\niiTl2QYzM+vfwXmdWFILcD0wC+gC1khaGRGb+spExCdT5S8FZiavxwNXAG1AAGuTY58BvgpcDKwG\nbgPmAD/Jqx1mZta/PHskJwNbI2JbRLwILAfO7qf8PGBZ8no2cEdEPJ2Exx3AHElHA0dExL0REcB3\ngPb8mmBmZpXkGSStwPbU+65k2wEkHQdMBe6scGxr8rqac14sqVNS586dOwfVADMzqyzPICk1dxFl\nys4Fbo6IPRWOrfqcEbEkItoiom3ixIkVK2tmZoOTZ5B0Acek3k8GdpQpO5eXh7X6O7YreV3NOc3M\nrA7yDJI1wDRJUyWNphAWK4sLSZoOHAncm9q8CniHpCMlHQm8A1gVEY8Dz0p6U3K11oeBH+fYBjMz\nqyC3q7Yi4iVJl1AIhRbgmxGxUdJioDMi+kJlHrA8mTzvO/ZpSf9IIYwAFkfE08nrvwJuBMZSuFrL\nV2yZmTWQUt/fw1ZbW1t0dnY2uhpmZk1F0tqIaKtUzne2m5lZJg4SMzPLxEFiZmaZOEjMzCwTB4mZ\nmWXiIDEzs0wcJGZmlomDxMzMMnGQmJlZJg4SMzPLJLe1toaTjnXdXLtqMzt6epk0bizzZ0+nfWbJ\nx6CYmY04DpIKOtZ1s/CWDfTuLjwqpbunl4W3bABwmJiZ4aGtiq5dtXlfiPTp3b2Ha1dtblCNzMyG\nFgdJBTt6ege03cxspHGQVDBp3NgBbTczG2kcJBXMnz2dsaNa9ts2dlQL82dPb1CNzMyGFk+2V9A3\noe6rtszMSnOQVKF9ZquDw8ysDA9tmZlZJg4SMzPLxEFiZmaZ5BokkuZI2ixpq6QFZcp8UNImSRsl\nfS/Zdoak9amfFyS1J/tulPRwat+MPNtgZmb9y22yXVILcD0wC+gC1khaGRGbUmWmAQuB0yLiGUlH\nAUTEXcCMpMx4YCtwe+r08yPi5rzqbmZm1cuzR3IysDUitkXEi8By4OyiMhcB10fEMwAR8USJ85wD\n/CQins+xrmZmNkh5BkkrsD31vivZlvYa4DWS7pG0WtKcEueZCywr2naVpPslXSdpTKkPl3SxpE5J\nnTt37hxsG8zMrII8g0QltkXR+4OBacDpwDzg65LG7TuBdDRwErAqdcxC4ATgT4DxwKdLfXhELImI\ntohomzhx4mDbYGZmFeQZJF3AMan3k4EdJcr8OCJ2R8TDwGYKwdLng8CPImJ334aIeDwKdgHfojCE\nZmZmDZJnkKwBpkmaKmk0hSGqlUVlOoAzACRNoDDUtS21fx5Fw1pJLwVJAtqBB3KpvZmZVSW3q7Yi\n4iVJl1AYlmoBvhkRGyUtBjojYmWy7x2SNgF7KFyN9RSApCkUejT/XnTqpZImUhg6Ww98LK82mJlZ\nZYoonrYYftra2qKzs7PR1TAzayqS1kZEW6VyvrPdzMwycZCYmVkmDhIzM8vEQWJmZpk4SMzMLBMH\niZmZZeIgMTOzTBwkZmaWiYPEzMwycZCYmVkmI2KJFEk7gUdrcKoJwJM1OE+zGEntHUltBbd3uKtV\ne4+LiIrP4RgRQVIrkjqrWXdmuBhJ7R1JbQW3d7ird3s9tGVmZpk4SMzMLBMHycAsaXQF6mwktXck\ntRXc3uGuru31HImZmWXiHomZmWXiIDEzs0wcJEUkzZG0WdJWSQtK7B8jaUWy/77k2fJNq4r2fkrS\nJkn3S/qppOMaUc9aqdTeVLlzJIWkpr5ktJr2Svpg8me8UdL36l3HWqri7/Oxku6StC75O31mI+pZ\nC5K+KekJSQ+U2S9JX0l+L+6X9Ee5VSYi/JP8AC3AQ8CrgdHAL4HXFZX5OPC15PVcYEWj651ze88A\n/iB5/VfDvb1JucOBnwGrgbZG1zvnP99pwDrgyOT9UY2ud87tXQL8VfL6dcAjja53hva+Bfgj4IEy\n+88EfgIIeBNwX151cY9kfycDWyNiW0S8CCwHzi4qczbw7eT1zcDbJKmOdayliu2NiLsi4vnk7Wpg\ncp3rWEvV/PkC/CPweeCFelYuB9W09yLg+oh4BiAinqhzHWupmvYGcETy+hXAjjrWr6Yi4mfA0/0U\nORv4ThSsBsZJOjqPujhI9tcKbE+970q2lSwTES8BvwVeWZfa1V417U27kML/cJpVxfZKmgkcExH/\nUs+K5aSaP9/XAK+RdI+k1ZLm1K12tVdNexcB50vqAm4DLq1P1RpioP++B+3gPE7axEr1LIqvj66m\nTLOoui2SzgfagD/PtUb56re9kg4CrgMuqFeFclbNn+/BFIa3TqfQ2/wPSSdGRE/OdctDNe2dB9wY\nEV+QdCrw3aS9e/OvXt3V7bvKPZL9dQHHpN5P5sCu774ykg6m0D3ur3s5lFXTXiS9HbgMOCsidtWp\nbnmo1N7DgROBuyU9QmFceWUTT7hX+/f5xxGxOyIeBjZTCJZmVE17LwS+DxAR9wKHUFjgcDiq6t93\nLThI9rcGmCZpqqTRFCbTVxaVWQl8JHl9DnBnJDNbTahie5Ohnn+mECLNPH4OFdobEb+NiAkRMSUi\nplCYEzorIjobU93Mqvn73EHhggokTaAw1LWtrrWsnWra+xjwNgBJr6UQJDvrWsv6WQl8OLl6603A\nbyPi8Tw+yENbKRHxkqRLgFUUrgD5ZkRslLQY6IyIlcA3KHSHt1LoicxtXI2zqbK91wKHAT9Iril4\nLCLOalilM6iyvcNGle1dBbxD0iZgDzA/Ip5qXK0Hr8r2/i1wg6RPUhjmuaBZ/yMoaRmFIckJyZzP\nFcAogIj4GoU5oDOBrcDzwEdzq0uT/h6amdkQ4aEtMzPLxEFiZmaZOEjMzCwTB4mZmWXiIDEzs0wc\nJGYVSBon6ePJ69Ml1Xz5FEkXSPo/AzzmkeTej+LtiyT9Xe1qZ9Y/B4lZZeMorPpcNUktOdXFbMhx\nkJhVdjVwvKT1JDdoSrpZ0q//NdvQAAAB9UlEQVQkLe1b/TnpIXxG0n8CH5B0vKR/lbRW0n9IOiEp\n9wFJD0j6paSfpT5nUlJ+i6TP922UNE/ShuSYa0pVUNJlyXM4/g2YntdvhFkpvrPdrLIFwIkRMUPS\n6cCPgddTWLfoHuA04D+Tsi9ExJ8CSPop8LGI2CLpFOD/Am8FPgPMjohuSeNSnzMDmAnsAjZL+t8U\n7ja/Bvhj4BngdkntEdHRd5CkP6awwsJMCv+mfwGsrf1vg1lpDhKzgfuviOgCSHopU3g5SFYk2w8D\n3szLS8sAjEl+vQe4UdL3gVtS5/1pRPw2OX4TcByFRxTcHRE7k+1LKTzQqCN13J8BP+p7boykYbXU\niw19DhKzgUuvgLyH/f8dPZf8ehDQExEzig+OiI8lPZR3Aesl9ZUpdd5qH5rmtY6sYTxHYlbZsxSW\nmK9aRPwOeFjSB2Df87PfmLw+PiLui4jPAE+y/1Lfxe4D/lzShGQCfx7w70Vlfga8V9JYSYcD7xlI\nXc2yco/ErIKIeCp5guADQC/wmyoPPQ/4qqTLKazKupzCc8SvlTSNQm/jp8m2A3ouyWc/LmkhcFdS\n/raI+HFRmV9IWgGsBx4F/mOgbTTLwqv/mplZJh7aMjOzTBwkZmaWiYPEzMwycZCYmVkmDhIzM8vE\nQWJmZpk4SMzMLJP/Dyv5Qr5DkFaNAAAAAElFTkSuQmCC\n",
+      "text/plain": [
+       "<matplotlib.figure.Figure at 0x11efca2e8>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "image/png": "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\nZmZW9P8BdQoprNg4fR8AAAAASUVORK5CYII=\n",
+      "text/plain": [
+       "<matplotlib.figure.Figure at 0x10d6c59b0>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Best threshold is 0.062\n",
+      "It achieves f1 = 0.8220300409649521, precision = 0.7797927461139896, recall = 0.8691049085659288\n"
+     ]
+    }
+   ],
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "thresholds = np.linspace(0, 1, 1001)\n",
+    "result = pick_best_threshold(y_test, y_pred_scores, thresholds)\n",
+    "\n",
+    "f1s = [p[1][0] for p in result['precision_recall_f1s']]\n",
+    " \n",
+    "plt.scatter(thresholds, f1s)\n",
+    "plt.title('F1 vs. threshold')\n",
+    "plt.xlabel('threshold')\n",
+    "plt.ylabel('F1')\n",
+    "plt.show()\n",
+    "\n",
+    "precision, recall = zip(*[(p[1][1], p[1][2]) for p in result['precision_recall_f1s']])\n",
+    "\n",
+    "plt.scatter(precision, recall)\n",
+    "plt.title('Precision vs. Recall')\n",
+    "plt.xlabel('Recall')\n",
+    "plt.ylabel('Precision')\n",
+    "plt.show()\n",
+    "\n",
+    "best_threshold = result['best_threshold']\n",
+    "print('Best threshold is {}'.format(best_threshold))\n",
+    "print(\n",
+    "    'It achieves f1 = {}, precision = {}, recall = {}'.format(\n",
+    "        *[p[1] for p in result['precision_recall_f1s'] if p[0] == best_threshold][0],\n",
+    "    )\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
